@@ -48,10 +48,9 @@ object KiiNREBridge {
       Subscribe[String, String](topics, kafkaParams)
     )
 
-    stream.map(record => (record.key, record.value))
-    stream.foreachRDD { rdd =>
-      println(rdd)
-    }
+    stream.filter(record => record.key !=null)
+     .map(record => (record.key, record.value.toString)).print
+    
 
     ssc.start()
     ssc.awaitTermination()
