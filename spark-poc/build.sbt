@@ -18,3 +18,4 @@ libraryDependencies += "org.apache.spark" % "spark-streaming-kafka-0-10_2.11" % 
 libraryDependencies += "org.apache.kafka" % "kafka_2.11" % "0.10.1.0"
 libraryDependencies += "org.apache.kafka" % "kafka-clients" % "0.10.1.0"
 libraryDependencies += "com.github.benfradet" %% "spark-kafka-0-10-writer" % "0.3.0"
+libraryDependencies += "org.scalaj" %% "scalaj-http" % "2.3.0"

@@ -12,6 +12,9 @@ import org.apache.kafka.clients.producer.{Callback, KafkaProducer, ProducerRecor
 import java.util.Properties
 import com.github.benfradet.spark.kafka010.writer._
 import org.apache.kafka.common.serialization.StringSerializer
+import scala.util.parsing.json._
+import scalaj.http._
+import org.apache.spark.rdd.RDD
 
 object KiiNREBridge {
   def main(args: Array[String]) {
@@ -20,17 +23,40 @@ object KiiNREBridge {
     ssc.checkpoint("checkpoint")
     ssc.sparkContext.setLogLevel("WARN")
     val homeDir = sys.env("HOME")
+    //NRE config
     val trustSTorePassword = ssc.sparkContext.getConf.get("spark.ssl.truststore.password")
     val keystorePassword = ssc.sparkContext.getConf.get("spark.ssl.keystore.password")
     val keyPassword = ssc.sparkContext.getConf.get("spark.ssl.key.password")
+    val kafkaNREbootstrapServers = ssc.sparkContext.getConf.get("spark.nre.kafka.bootstrap.servers")
+    val kafkaNRETopic = ssc.sparkContext.getConf.get("spark.nre.kafka.topic.id")
+    val kafkaNREGroupId = ssc.sparkContext.getConf.get("spark.nre.kafka.group.id")
+
+    //KII config
+    val host = ssc.sparkContext.getConf.get("spark.kii.app.host")
+    val appID = ssc.sparkContext.getConf.get("spark.kii.app.id")
+    val accessToken = ssc.sparkContext.getConf.get("spark.kii.user.accesstoken")
+    val appKey = ssc.sparkContext.getConf.get("spark.kii.app.key")
+    val group = "vehicle-monitoring"
+    val confBucket = "config"
+
+    //load
+    val response=Http(s"https://$host/api/apps/$appID/groups/$group/buckets/$confBucket/objects/velocity-chart")
+      .method("GET")
+      .header("Authorization", s"Bearer $accessToken")
+      .header("Content-Type", "application/json") 
+    
+    val chartConfig = JSON.parseFull(response.asString.body).get.asInstanceOf[Map[String, Any]]
+    val chartType = chartConfig("chart_type").toString
+
+    println(s"***************************** $chartType")
     
     val nbDir = homeDir + "/spark-notebook/notebooks/streaming" // Path of the certificates
     val kafkaParams = Map[String, Object](
-      "bootstrap.servers" -> "development-jp-kafka-0001.internal.kii.com:9093",
+      "bootstrap.servers" -> kafkaNREbootstrapServers,
       "key.deserializer" -> classOf[StringDeserializer],
       "value.deserializer" -> classOf[StringDeserializer],
       "partition.assignment.strategy" -> "org.apache.kafka.clients.consumer.RangeAssignor",
-      "group.id" -> "3d73cc26-Xjfc9m0pTYOWYh7ZVYpDXg",
+      "group.id" -> kafkaNREGroupId,
       "auto.offset.reset" -> "latest",
       "enable.auto.commit" -> "false",
       "security.protocol" -> "SSL",
@@ -42,7 +68,7 @@ object KiiNREBridge {
       "ssl.keystore.password" -> keystorePassword,
       "ssl.key.password" -> keyPassword
     )
-    val topics = Array("3d73cc26-Xjfc9m0pTYOWYh7ZVYpDXg")
+    val topics = Array(kafkaNRETopic)
     val stream = KafkaUtils.createDirectStream[String, String](
       ssc,
       PreferConsistent,
@@ -62,12 +88,17 @@ object KiiNREBridge {
       p
     }
     messages.foreachRDD( rdd => {
-      rdd.writeToKafka(
+      val filtered = rdd.filter(this.filterNRE)
+      filtered.writeToKafka(
         producerConfig,
         s => new ProducerRecord[String, String](topic, s._1,s._2)
       )
     })
     ssc.start()
     ssc.awaitTermination() 
+  }
+
+  def filterNRE(original: ((String,String))) : Boolean ={
+    return true
   }
 }
