@@ -58,10 +58,14 @@ object KiiNREBridge {
     val messages = stream
       .filter(record => record.key !=null && record.value !=null)
       .filter(record => BucketFilter.filter(bucketToFilter,record.key.toString,record.value.toString))
-      .map(record => (record.key.toString, record.value.toString))
+      .map(record => {
+        val parsed = new KiiNREParser(record.key.toString, record.value.toString)
+        val value = "%f".format(parsed.jsonMap("velocity").asInstanceOf[Double])
+        ("velocity",value)
+      })
 
     //Kafka Producer 
-    val topic = "test"
+    val topic = "velocity"
     val producerConfig = {
       val p = new java.util.Properties()
       p.setProperty("bootstrap.servers", "127.0.0.1:9092")
@@ -81,7 +85,7 @@ object KiiNREBridge {
   }
 
   def filterNRE(original: ((String,String))) : Boolean ={
-    println(original._1)
+    println("%s : %s".format(original._1,original._2))
     return true
   }
 }
