@@ -9,7 +9,7 @@
 
 4. Execute `kii-setup.snb` on your `spark-notebook` installation. Please check [spark-notebook-nre](https://github.com/KiiPlatform/spark-notebook-nre) repocitory for more detail. 
 
-4. Create `.env` file and put lines bellow.
+4. Create `.env` file and put lines bellow. Change `#` with your NRE properties value.
 
     ```
     export TOPIC_ID='#kafka_topic_id_from_nre' 
@@ -19,9 +19,9 @@
     export KEYSTORE_PASSWORD='#store_jks_password'
     export KEY_PASSWORD='#trustore_jks_password'
     export KII_HOST='#kii_app_host'
-    export KII_ACCESS_TOKEN='kii_access_token'
+    export KII_ACCESS_TOKEN='#kii_access_token'
     export KII_APP_ID='#kii_app_id'
-    export KII_APP_KEY='7b3d7fe30777d53749ace9b15caf6c5f'
+    export KII_APP_KEY='#kii_app_key'
     ```
 
 5. Execute command bellow.
