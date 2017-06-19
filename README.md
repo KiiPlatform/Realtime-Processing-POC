@@ -1,5 +1,15 @@
 # Realtime-Processing-POC
 
+## Overview
+This project is a Proof of Concept (PoC) for Kii cloud realtime processing using Spark and NRE.
+
+## Objective Scenario
+- This PoC build a subsystem to process NRE data then visualize it on a simple line chart.
+- The scope of the realtime data processing is limited to :
+  - Filters the desired data
+  - Simple aggregation (`avg`)
+- The visualization uses `spark-notebook`'s chart feature   
+
 ## System Design
 
 ![](/images/architecture.png)
