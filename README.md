@@ -2,15 +2,15 @@
 
 ## System Design
 
-TBD
+![](/images/architecture.png)
 
 ## Related Repository
 
 - [velocity-mock](https://github.com/KiiPlatform/velocity-mock)
-  Node JS application to generate mock data.
+  Node JS application to generate mock data. (No. 3 on the system design)
 
 - [spark-notebook-nre](https://github.com/KiiPlatform/spark-notebook-nre)
-  Notebooks project for setup and visualization 
+  Notebooks project for setup and visualization (No. 2 on the system design)
 
 ## Pre Requirements
 
